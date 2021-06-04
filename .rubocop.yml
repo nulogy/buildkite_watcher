@@ -27,6 +27,9 @@ Style/TrailingCommaInHashLiteral:
 Layout/LineLength:
   Max: 120
 
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
 Metrics/BlockLength:
   Exclude:
     - '**/*_spec.rb'
