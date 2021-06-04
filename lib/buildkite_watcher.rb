@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rainbow"
+require "rest-client"
 require "buildkite_watcher/version"
 require "buildkite_watcher/progress_bar_runner"
 require "buildkite_watcher/progress_bar"
@@ -11,8 +12,8 @@ require "buildkite_watcher/buildkite_build_checker"
 module BuildkiteWatcher
   class << self
     GRAPHQL_QUERY = <<~GRAPHQL
-      query ($commitHash: [String!], $branch: [String!]) {
-        pipeline(slug: "[TODO]") {
+      query ($pipelineSlug: ID!, $commitHash: [String!], $branch: [String!]) {
+        pipeline(slug: $pipelineSlug) {
           commit_hash_builds: builds(commit: $commitHash, state: [PASSED, RUNNING, FAILED], first: 1) {
             edges {
               node {
@@ -66,7 +67,6 @@ module BuildkiteWatcher
         }
       }
     GRAPHQL
-    BUILDS_URL = "https://api.buildkite.com/v2/organizations/[org-name]/pipelines/[pipeline]/builds"
     BUILD_PASSED = "PASSED"
     BUILD_RUNNING = "RUNNING"
     BUILD_FAILED = "FAILED"
@@ -87,7 +87,7 @@ module BuildkiteWatcher
         maybe_notify(previous_result, new_result)
         previous_result = new_result
 
-        sleep 5
+        sleep 30
       end
     end
 
@@ -104,7 +104,15 @@ module BuildkiteWatcher
       puts Rainbow("HEAD ➜  ").bright + Rainbow(commit_hash)
       puts
 
-      buildkite_query = { query: GRAPHQL_QUERY, variables: { commitHash: commit_hash, branch: branch_name } }
+      buildkite_query = {
+        query: GRAPHQL_QUERY,
+        variables: {
+          pipelineSlug: pipeline_slug,
+          commitHash: commit_hash,
+          branch: branch_name,
+        },
+      }
+
       builds = fetch_build_data(buildkite_query)
       commit_hash_builds = simplify_builds_response_data(builds.commit_hash_builds)
       branch_builds = simplify_builds_response_data(builds.branch_builds)
@@ -145,7 +153,7 @@ module BuildkiteWatcher
       build.state
     rescue StandardError => e
       puts
-      puts Rainbow("ERROR: #{e.message}").red
+      puts Rainbow("ERROR: #{e.message}\n#{e.backtrace}").red
     end
 
     private
@@ -261,6 +269,10 @@ module BuildkiteWatcher
 
     def fetch_failures(download_url)
       JSON.parse(RestClient.get(download_url), object_class: OpenStruct)
+    end
+
+    def pipeline_slug
+      ENV.fetch("PIPELINE_SLUG")
     end
 
     def branch_name
