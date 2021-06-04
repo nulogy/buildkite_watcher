@@ -86,6 +86,7 @@ module BuildkiteWatcher
 
       BuildStatus.new(completed: completed_job_count(build_node), total: total_job_count(build_node))
     end
+
     # rubocop:enable Metrics/AbcSize
 
     private

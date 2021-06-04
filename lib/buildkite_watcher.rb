@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require_relative "buildkite_watcher/version"
+require "buildkite_watcher/progress_bar_runner"
+require "buildkite_watcher/progress_bar"
+require "buildkite_watcher/buildkite_build_checker"
 
 # Command line utility that continuously watches for the buildkite job running current git HEAD and
 # notifies on build status changes.
