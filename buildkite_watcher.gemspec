@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
     Command line utility that continuously watches for the buildkite job running current git HEAD and
     notifies on build status changes.
   MSG
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.7", "~> 3.0.1")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.7", "< 3.1")
 
   spec.metadata["source_code_uri"] = "https://github.com/nulogy/buildkite_watcher"
   spec.metadata["changelog_uri"] = "https://github.com/nulogy/buildkite_watcher/blob/main/CHANGELOG.md"
