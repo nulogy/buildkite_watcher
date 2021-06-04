@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "buildkite_watcher"
+require_relative "./result_matcher"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
