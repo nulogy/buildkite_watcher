@@ -2,6 +2,8 @@
 
 require_relative "buildkite_watcher/version"
 
+# Command line utility that continuously watches for the buildkite job running current git HEAD and
+# notifies on build status changes.
 module BuildkiteWatcher
   BUILDKITE_TOKEN_PATH = Pathname.new(ENV["HOME"]).join(".buildkite_token").to_s
 

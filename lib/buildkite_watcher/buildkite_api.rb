@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BuildkiteWatcher
   class BuildStatus
     attr_reader :errors
@@ -39,25 +41,28 @@ module BuildkiteWatcher
       pipeline_slug = "[TO INJECT]"
       http =
         GraphQL::Client::HTTP.new("https://graphql.buildkite.com/v1") do
+          # rubocop:disable Lint/NestedMethodDefinition
           def headers(context)
             { Authorization: "Bearer #{context[:token]}" }
           end
+          # rubocop:enable Lint/NestedMethodDefinition
         end
       client = GraphQL::Client.new(schema: SCHEMA, execute: http)
       @build_status_query = client.parse(<<~GRAPHQL)
-      query($branch: [String!]) {
-        pipeline(slug: "#{pipeline_slug}") {
-          builds(branch: $branch, first: 1) {
-            edges {
-              node {
-                number
-                state
-                jobs(first: 300) {
-                  count
-                  edges {
-                    node {
-                      ... on JobTypeCommand {
-                        state
+        query($branch: [String!]) {
+          pipeline(slug: "#{pipeline_slug}") {
+            builds(branch: $branch, first: 1) {
+              edges {
+                node {
+                  number
+                  state
+                  jobs(first: 300) {
+                    count
+                    edges {
+                      node {
+                        ... on JobTypeCommand {
+                          state
+                        }
                       }
                     }
                   }
@@ -66,10 +71,10 @@ module BuildkiteWatcher
             }
           }
         }
-      }
       GRAPHQL
     end
 
+    # rubocop:disable Metrics/AbcSize
     def build_status(branch)
       result = Client.query(@build_status_query, variables: { branch: [branch] }, context: { token: @token })
 
@@ -81,6 +86,7 @@ module BuildkiteWatcher
 
       BuildStatus.new(completed: completed_job_count(build_node), total: total_job_count(build_node))
     end
+    # rubocop:enable Metrics/AbcSize
 
     private
 

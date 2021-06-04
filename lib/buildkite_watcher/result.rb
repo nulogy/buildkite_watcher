@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # Synopsis
 # ========
@@ -131,6 +133,7 @@ module Results
     #
     def map_success
       return self unless @success
+
       self.class.success(yield(*@result))
     end
 
@@ -144,6 +147,7 @@ module Results
     #
     def map_failure
       return self if @success
+
       self.class.failure(yield(*@result))
     end
 
@@ -157,6 +161,7 @@ module Results
     #
     def on_success
       return self unless @success
+
       yield(*@result)
       self
     end
@@ -171,6 +176,7 @@ module Results
     #
     def on_failure
       return self if @success
+
       yield(*@result)
       self
     end

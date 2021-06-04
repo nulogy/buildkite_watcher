@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module BuildkiteWatcher
+  # rubocop:disable Metrics/ClassLength
   class ProgressBar
     PACMAN_OPEN = "ᗤ"
     PACMAN_CLOSED = "○"
@@ -140,4 +141,5 @@ module BuildkiteWatcher
         end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

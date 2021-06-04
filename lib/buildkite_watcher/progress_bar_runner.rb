@@ -13,6 +13,7 @@ class ProgressBarRunner
     @progress_bar = progress_bar
   end
 
+  # rubocop:disable Metrics/MethodLength
   def start
     @thread =
       Thread.new do
@@ -28,6 +29,8 @@ class ProgressBarRunner
         end
       end
   end
+
+  # rubocop:enable Metrics/MethodLength
 
   def stop
     progress_bar.finish

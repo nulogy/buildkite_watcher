@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "buildkite_watcher/buildkite_build_checker"
 
 module BuildkiteWatcher

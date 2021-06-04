@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "buildkite_watcher/progress_bar"
 
 module BuildkiteWatcher
@@ -66,45 +68,45 @@ module BuildkiteWatcher
         expect(spy.animated_lines).to all(include("100%"))
       end
     end
+  end
 
-    class IOSpy
-      attr_reader :lines
+  class IOSpy
+    attr_reader :lines
 
-      def initialize
-        @lines = []
+    def initialize
+      @lines = []
+    end
+
+    def puts(content)
+      if escape_sequence?(content) || escape_sequence?(lines.last)
+        lines << content
+      else
+        # this re-constructs the last line, so that we
+        # don't inadvertantly modify a constant
+        last_line = lines.last.dup + content
+        lines[-1] = last_line
       end
+    end
+    alias print puts
 
-      def puts(content)
-        if escape_sequence?(content) || escape_sequence?(lines.last)
-          lines << content
-        else
-          # this re-constructs the last line, so that we
-          # don't inadvertantly modify a constant
-          last_line = lines.last.dup + content
-          lines[-1] = last_line
-        end
-      end
-      alias print puts
+    def animated_lines
+      lines.reject(&method(:escape_sequence?))
+    end
 
-      def animated_lines
-        lines.reject(&method(:escape_sequence?))
-      end
+    def read
+      lines.join("\n")
+    end
 
-      def read
-        lines.join("\n")
-      end
+    def to_s
+      strings = ["Received lines:", "=========="]
+      lines.each { |l| strings << l.inspect }
+      strings.join("\n")
+    end
 
-      def to_s
-        strings = ["Received lines:", "=========="]
-        lines.each { |l| strings << l.inspect }
-        strings.join("\n")
-      end
+    private
 
-      private
-
-      def escape_sequence?(text)
-        text.include?("\e[")
-      end
+    def escape_sequence?(text)
+      text.include?("\e[")
     end
   end
 end
