@@ -14,7 +14,7 @@ module BuildkiteWatcher
     GRAPHQL_QUERY = <<~GRAPHQL
       query ($pipelineSlug: ID!, $commitHash: [String!], $branch: [String!]) {
         pipeline(slug: $pipelineSlug) {
-          commit_hash_builds: builds(commit: $commitHash, state: [PASSED, RUNNING, FAILED], first: 1) {
+          commit_hash_builds: builds(commit: $commitHash, state: [PASSED, RUNNING, FAILED, BLOCKED], first: 1) {
             edges {
               node {
                 commit
@@ -39,7 +39,7 @@ module BuildkiteWatcher
               }
             }
           }
-          branch_builds: builds(branch: $branch, state: [PASSED, RUNNING, FAILED], first: 2) {
+          branch_builds: builds(branch: $branch, state: [PASSED, RUNNING, FAILED, BLOCKED], first: 2) {
             edges {
               node {
                 commit
@@ -68,6 +68,7 @@ module BuildkiteWatcher
       }
     GRAPHQL
     BUILD_PASSED = "PASSED"
+    BUILD_BLOCKED = "BLOCKED"
     BUILD_RUNNING = "RUNNING"
     BUILD_FAILED = "FAILED"
     BUILD_UNKNOWN_STATUS = "UNKNOWN"
@@ -120,7 +121,7 @@ module BuildkiteWatcher
       if commit_hash_builds.any?
         build = commit_hash_builds.first
         print_state(build.state)
-        return build.state if build.state == BUILD_PASSED || branch_builds.empty?
+        return build.state if build_passed?(build.state) || branch_builds.empty?
 
         if build.state == BUILD_RUNNING && prior_build_failed?(branch_builds)
           puts
@@ -140,7 +141,7 @@ module BuildkiteWatcher
 
         build = branch_builds.first
         print_state(build.state)
-        return build.state if build.state == BUILD_PASSED
+        return build.state if build_passed?(build.state)
 
         if last_build_failed?(branch_builds)
           puts
@@ -162,11 +163,15 @@ module BuildkiteWatcher
       return if new_result == previous_result || previous_result == BUILD_UNKNOWN_STATUS
 
       case new_result
-      when BUILD_PASSED
+      when build_passed?(new_result)
         system('osascript -e \'display notification "CI PASSED" with title "CI Result Watch" sound name "Glass"\'')
       when BUILD_FAILED
         system('osascript -e \'display notification "CI FAILED" with title "CI Result Watch" sound name "Basso"\'')
       end
+    end
+
+    def build_passed?(state)
+      [BUILD_PASSED, BUILD_BLOCKED].include?(state)
     end
 
     def fetch_build_data(buildkite_query)
@@ -208,7 +213,7 @@ module BuildkiteWatcher
 
     def print_state(state)
       case state
-      when BUILD_PASSED
+      when build_passed?(state)
         puts Rainbow("CI Status: ").bright + Rainbow(state).green
       when BUILD_RUNNING
         puts Rainbow("CI Status: ").bright + Rainbow(state).yellow
@@ -229,11 +234,11 @@ module BuildkiteWatcher
     end
 
     def prior_build_failed?(builds)
-      builds.second.present? && builds.second.state == BUILD_FAILED
+      builds[1].present? && builds[1].state == BUILD_FAILED
     end
 
     def prior_failed_build(builds)
-      builds.second
+      builds[1]
     end
 
     def print_failures(build)
@@ -257,13 +262,10 @@ module BuildkiteWatcher
       failures.map(&:name).map { |name| /\[(\w+)\] (.*): .*/.match(name).captures }.group_by(&:first)
         .each do |key, values|
         puts key
-        values
-          .map(&:second)
-          .uniq
-          .each do |failure_file|
-            failure_file
-            puts Rainbow(failure_file).red
-          end
+        values.map { |e| e[1] }.uniq.each do |failure_file|
+          failure_file
+          puts Rainbow(failure_file).red
+        end
       end
     end
 
@@ -276,11 +278,11 @@ module BuildkiteWatcher
     end
 
     def branch_name
-      `git symbolic-ref --short HEAD`.strip
+      ENV.fetch("BRANCH_NAME", `git symbolic-ref --short HEAD`.strip)
     end
 
     def commit_hash
-      `git rev-parse HEAD`.strip
+      ENV.fetch("COMMIT_HASH", `git rev-parse HEAD`.strip)
     end
 
     def buildkite_token
