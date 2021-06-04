@@ -12,5 +12,32 @@ Style/StringLiteralsInInterpolation:
   Enabled: true
   EnforcedStyle: double_quotes
 
+Style/Documentation:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
 Layout/LineLength:
   Max: 120
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Metrics/BlockLength:
+  Exclude:
+    - '**/*_spec.rb'
+
+Metrics/ModuleLength:
+  Exclude:
+    - '**/*_spec.rb'
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - "**/*_spec.rb"
