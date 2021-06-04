@@ -2,6 +2,7 @@
 
 require "rainbow"
 require "rest-client"
+require "json"
 require "buildkite_watcher/version"
 
 # Command line utility that continuously watches for the buildkite job running current git HEAD and
