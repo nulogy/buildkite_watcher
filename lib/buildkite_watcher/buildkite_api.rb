@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/client"
+
 module BuildkiteWatcher
   class BuildStatus
     attr_reader :errors
@@ -32,37 +34,30 @@ module BuildkiteWatcher
   end
 
   class BuildkiteAPI
-    SCHEMA = GraphQL::Client.load_schema("./buildkite_graphql_schema.json")
-
-    private_constant :SCHEMA
-
-    def initialize(token)
-      @token = token
-      pipeline_slug = "[TO INJECT]"
-      http =
-        GraphQL::Client::HTTP.new("https://graphql.buildkite.com/v1") do
-          # rubocop:disable Lint/NestedMethodDefinition
-          def headers(context)
-            { Authorization: "Bearer #{context[:token]}" }
-          end
-          # rubocop:enable Lint/NestedMethodDefinition
+    PIPELINE_SLUG = "nulogy-corp/eco"
+    HTTP =
+      GraphQL::Client::HTTP.new("https://graphql.buildkite.com/v1") do
+        def headers(context)
+          { Authorization: "Bearer #{context[:token]}" }
         end
-      client = GraphQL::Client.new(schema: SCHEMA, execute: http)
-      @build_status_query = client.parse(<<~GRAPHQL)
-        query($branch: [String!]) {
-          pipeline(slug: "#{pipeline_slug}") {
-            builds(branch: $branch, first: 1) {
-              edges {
-                node {
-                  number
-                  state
-                  jobs(first: 300) {
-                    count
-                    edges {
-                      node {
-                        ... on JobTypeCommand {
-                          state
-                        }
+      end
+    Schema = GraphQL::Client.load_schema("#{__dir__}/buildkite_graphql_schema.json")
+    Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
+
+    BuildStatusQuery = Client.parse(<<~GRAPHQL)
+      query($branch: [String!]) {
+        pipeline(slug: "#{PIPELINE_SLUG}") {
+          builds(branch: $branch, first: 1) {
+            edges {
+              node {
+                number
+                state
+                jobs(first: 300) {
+                  count
+                  edges {
+                    node {
+                      ... on JobTypeCommand {
+                        state
                       }
                     }
                   }
@@ -71,12 +66,17 @@ module BuildkiteWatcher
             }
           }
         }
-      GRAPHQL
+      }
+    GRAPHQL
+
+    private_constant :HTTP, :Schema, :Client, :BuildStatusQuery
+
+    def initialize(token)
+      @token = token
     end
 
-    # rubocop:disable Metrics/AbcSize
     def build_status(branch)
-      result = Client.query(@build_status_query, variables: { branch: [branch] }, context: { token: @token })
+      result = Client.query(BuildStatusQuery, variables: { branch: [branch] }, context: { token: @token })
 
       return BuildStatus.new(error: true, errors: result.errors.messages["data"]) unless result.data
 
@@ -86,8 +86,6 @@ module BuildkiteWatcher
 
       BuildStatus.new(completed: completed_job_count(build_node), total: total_job_count(build_node))
     end
-
-    # rubocop:enable Metrics/AbcSize
 
     private
 

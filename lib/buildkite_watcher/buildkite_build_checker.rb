@@ -21,8 +21,6 @@ module BuildkiteWatcher
       @error_count = 0
     end
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
     def run
       initial_status = buildkite_api.build_status(@branch)
 
@@ -63,9 +61,6 @@ module BuildkiteWatcher
         return Results::Result.new(status.success?, nil)
       end
     end
-
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
 
     private
 
