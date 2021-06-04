@@ -30,19 +30,23 @@ module BuildkiteWatcher
   end
 
   class BuildkiteAPI
-    PIPELINE_SLUG = "[TO INJECT]"
-    HTTP =
-      GraphQL::Client::HTTP.new("https://graphql.buildkite.com/v1") do
-        def headers(context)
-          { Authorization: "Bearer #{context[:token]}" }
-        end
-      end
-    Schema = GraphQL::Client.load_schema("development/scripts/nugit/ci/buildkite_graphql_schema.json")
-    Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
+    SCHEMA = GraphQL::Client.load_schema("./buildkite_graphql_schema.json")
 
-    BuildStatusQuery = Client.parse(<<~GRAPHQL)
+    private_constant :SCHEMA
+
+    def initialize(token)
+      @token = token
+      pipeline_slug = "[TO INJECT]"
+      http =
+        GraphQL::Client::HTTP.new("https://graphql.buildkite.com/v1") do
+          def headers(context)
+            { Authorization: "Bearer #{context[:token]}" }
+          end
+        end
+      client = GraphQL::Client.new(schema: SCHEMA, execute: http)
+      @build_status_query = client.parse(<<~GRAPHQL)
       query($branch: [String!]) {
-        pipeline(slug: "#{PIPELINE_SLUG}") {
+        pipeline(slug: "#{pipeline_slug}") {
           builds(branch: $branch, first: 1) {
             edges {
               node {
@@ -63,16 +67,11 @@ module BuildkiteWatcher
           }
         }
       }
-    GRAPHQL
-
-    private_constant :HTTP, :Schema, :Client, :BuildStatusQuery
-
-    def initialize(token)
-      @token = token
+      GRAPHQL
     end
 
     def build_status(branch)
-      result = Client.query(BuildStatusQuery, variables: { branch: [branch] }, context: { token: @token })
+      result = Client.query(@build_status_query, variables: { branch: [branch] }, context: { token: @token })
 
       return BuildStatus.new(error: true, errors: result.errors.messages["data"]) unless result.data
 

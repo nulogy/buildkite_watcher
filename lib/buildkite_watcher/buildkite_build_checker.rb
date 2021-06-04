@@ -1,8 +1,7 @@
 require "graphql/client"
 require "graphql/client/http"
-require "results"
-
-require_relative "./buildkite_api"
+require "buildkite_watcher/result"
+require "buildkite_watcher/buildkite_api"
 
 module BuildkiteWatcher
   class BuildkiteBuildChecker
