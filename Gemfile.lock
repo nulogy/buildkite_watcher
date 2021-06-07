@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    buildkite_watcher (0.1.1)
+    buildkite_watcher (0.1.2)
       rest-client (~> 2.1.0)
 
 GEM
