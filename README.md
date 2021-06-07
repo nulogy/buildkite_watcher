@@ -8,11 +8,13 @@ Run this command:
 
     $ gem install buildkite_watcher
 
+Create a [New API Access token in buildkite](https://buildkite.com/user/api-access-tokens/new) with read access to pipeline, jobs, and artifacts.
+
 ## Usage
 
 From a directory in your project, run.
 
-`$ bw `
+`$ PIPELINE_SLUG="<org-name/pipeline-name>"  bw `
 
 ## Development
 
