@@ -161,7 +161,7 @@ module BuildkiteWatcher
       return if new_result == previous_result || previous_result == BUILD_UNKNOWN_STATUS
 
       case new_result
-      when build_passed?(new_result)
+      when BUILD_PASSED, BUILD_BLOCKED
         system('osascript -e \'display notification "CI PASSED" with title "CI Result Watch" sound name "Glass"\'')
       when BUILD_FAILED
         system('osascript -e \'display notification "CI FAILED" with title "CI Result Watch" sound name "Basso"\'')
@@ -211,7 +211,7 @@ module BuildkiteWatcher
 
     def print_state(state)
       case state
-      when build_passed?(state)
+      when BUILD_PASSED, BUILD_BLOCKED
         puts Rainbow("CI Status: ").bright + Rainbow(state).green
       when BUILD_RUNNING
         puts Rainbow("CI Status: ").bright + Rainbow(state).yellow
