@@ -30,4 +30,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "rest-client", "~> 2.0"
+  spec.add_dependency "tty-prompt", "~> 0.23"
+  spec.add_dependency "tty-config", "~> 0.5"
 end
