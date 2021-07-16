@@ -6,27 +6,41 @@ require "tty-prompt"
 require "buildkite_watcher/config"
 
 module BuildkiteWatcher
-  module ConfigLoader
+  class ConfigLoader
     CONFIG_FILE_NAME = ".buildkite_watcher"
     SECRETS_FILE_NAME = ".buildkite_watcher_secrets"
     EXTENSION = ".yml"
 
     def self.load(config = TTY::Config.new, secrets = TTY::Config.new, prompt = TTY::Prompt.new)
+      new(config, secrets, prompt).load
+    end
+
+    def load
       config.filename = CONFIG_FILE_NAME
       config.extname = EXTENSION
       config.append_path Dir.pwd
-      config.exist? ? config.read : generate_config_file(config, prompt)
+      config.exist? ? config.read : generate_config_file
 
       secrets.filename = SECRETS_FILE_NAME
       config.extname = EXTENSION
       secrets.append_path Dir.home
 
-      secrets.exist? ? secrets.read : generate_secrets_file(secrets, prompt)
+      secrets.exist? ? secrets.read : generate_secrets_file
 
       Config.new(config, secrets)
     end
 
-    def self.generate_config_file(config, prompt)
+    private
+
+    attr_reader :config, :secrets, :prompt
+
+    def initialize(config, secrets, prompt)
+      @config = config
+      @secrets = secrets
+      @prompt = prompt
+    end
+
+    def generate_config_file
       prompt.ok("Welcome to Buildkite Watcher!")
       prompt.say("I can't find the configuration file, so I'll generate one for you now.")
       pipeline_slug = prompt.ask(<<~MSG)
@@ -37,11 +51,11 @@ module BuildkiteWatcher
       config.write(create: true)
     end
 
-    def self.generate_secrets_file(secrets, prompt)
+    def generate_secrets_file
       buildkite_token = prompt.mask(<<~MSG)
         Create a #{
-          TTY::Link.link_to("New API Access token in buildkite", "https://buildkite.com/user/api-access-tokens/new")
-        } with read access to pipeline, jobs, and artifacts, and paste the token here:
+            TTY::Link.link_to("New API Access token in buildkite", "https://buildkite.com/user/api-access-tokens/new")
+          } with read access to pipeline, jobs, and artifacts, and paste the token here:
       MSG
       secrets.set(:buildkite_token, value: buildkite_token)
       secrets.write(create: true)
