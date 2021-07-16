@@ -28,8 +28,11 @@ module BuildkiteWatcher
 
     def self.generate_config_file(config, prompt)
       prompt.ok("Welcome to Buildkite Watcher!")
-      prompt.say("I can't find my configuration file, so I'll generate one for you now.")
-      pipeline_slug = prompt.ask("What's the pipeline slug of the pipeline you want to watch?")
+      prompt.say("I can't find the configuration file, so I'll generate one for you now.")
+      pipeline_slug = prompt.ask(<<~MSG)
+        What's the pipeline slug of the pipeline you want to watch?
+        You can find the pipeline slug on the URL of any of your builds, and it has the form of 'org-name/pipeline-name'.
+      MSG
       config.set(:pipeline_slug, value: pipeline_slug)
       config.write(create: true)
     end
