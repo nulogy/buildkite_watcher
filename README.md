@@ -4,17 +4,15 @@ Command line utility that continuously watches for the buildkite job running cur
 
 ## Installation
 
-Run this command:
+1. Run this command:
 
     $ gem install buildkite_watcher
-
-Create a [New API Access token in buildkite](https://buildkite.com/user/api-access-tokens/new) with read access to pipeline, jobs, and artifacts.
 
 ## Usage
 
 From a directory in your project, run.
 
-`$ PIPELINE_SLUG="<org-name/pipeline-name>"  bw `
+`$ bw`
 
 ## Development
 
