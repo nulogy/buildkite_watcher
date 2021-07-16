@@ -38,7 +38,7 @@ module BuildkiteWatcher
     end
 
     def self.generate_secrets_file(secrets, prompt)
-      buildkite_token = prompt.ask("Your buildkite token?")
+      buildkite_token = prompt.mask("Your buildkite token?")
       secrets.set(:buildkite_token, value: buildkite_token)
       secrets.write(create: true)
     end

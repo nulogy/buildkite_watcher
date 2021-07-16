@@ -7,7 +7,7 @@ module BuildkiteWatcher
     let(:secrets_file_name) { File.join(tmp_dir, "#{ConfigLoader::SECRETS_FILE_NAME}#{ConfigLoader::EXTENSION}") }
     let(:config) { create_tty_config }
     let(:secrets) { create_tty_config }
-    let(:prompt) { instance_double(TTY::Prompt, say: nil, ok: nil, ask: "my-response") }
+    let(:prompt) { instance_double(TTY::Prompt, say: nil, ok: nil, ask: "my-response", mask: "secret") }
 
     before do
       stub_const("BuildkiteWatcher::ConfigLoader::CONFIG_FILE_NAME", "buildkite_watcher_test")
@@ -48,7 +48,7 @@ module BuildkiteWatcher
     end
 
     it "prompts the user if secrets file is missing" do
-      allow(prompt).to receive(:ask).and_return("my-secret-token")
+      allow(prompt).to receive(:mask).and_return("my-secret-token")
 
       result = load
 
@@ -56,7 +56,7 @@ module BuildkiteWatcher
     end
 
     it "prompts the user if secrets file is missing" do
-      allow(prompt).to receive(:ask).and_return("my-secret-token")
+      allow(prompt).to receive(:mask).and_return("my-secret-token")
 
       load
 
