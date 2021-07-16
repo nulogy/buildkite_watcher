@@ -4,7 +4,7 @@ require "rainbow"
 require "rest-client"
 require "json"
 require "buildkite_watcher/version"
-require "buildkite_watcher/config"
+require "buildkite_watcher/config_loader"
 
 # Command line utility that continuously watches for the buildkite job running current git HEAD and
 # notifies on build status changes.
@@ -73,7 +73,7 @@ module BuildkiteWatcher
     BUILD_UNKNOWN_STATUS = "UNKNOWN"
 
     def result_watch
-      config = Config.load
+      config = ConfigLoader.load
 
       Signal.trap("SIGINT") do
         puts
@@ -109,13 +109,13 @@ module BuildkiteWatcher
       buildkite_query = {
         query: GRAPHQL_QUERY,
         variables: {
-          pipelineSlug: config.fetch(:pipeline),
+          pipelineSlug: config.pipeline,
           commitHash: commit_hash,
           branch: branch_name,
         },
       }
 
-      builds = fetch_build_data(buildkite_query)
+      builds = fetch_build_data(buildkite_query, config)
       commit_hash_builds = simplify_builds_response_data(builds.commit_hash_builds)
       branch_builds = simplify_builds_response_data(builds.branch_builds)
 
@@ -175,13 +175,13 @@ module BuildkiteWatcher
       [BUILD_PASSED, BUILD_BLOCKED].include?(state)
     end
 
-    def fetch_build_data(buildkite_query)
+    def fetch_build_data(buildkite_query, config)
       response =
         JSON.parse(
           RestClient.post(
             "https://graphql.buildkite.com/v1",
             buildkite_query.to_json,
-            { Authorization: "Bearer #{buildkite_token}", content_type: :json },
+            { Authorization: "Bearer #{config.buildkite_token}", content_type: :json },
           ),
           object_class: OpenStruct,
         )
@@ -286,10 +286,6 @@ module BuildkiteWatcher
 
     def commit_hash
       ENV.fetch("COMMIT_HASH", `git rev-parse HEAD`.strip)
-    end
-
-    def buildkite_token
-      @_buildkite_token ||= `cat ~/.buildkite_token`
     end
   end
 end
