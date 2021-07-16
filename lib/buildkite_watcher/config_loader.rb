@@ -21,7 +21,7 @@ module BuildkiteWatcher
       secrets.append_path Dir.pwd
       secrets.append_path Dir.home
 
-      secrets.read if secrets.exist?
+      secrets.exist? ? secrets.read : generate_secrets_file(secrets, prompt)
 
       Config.new(config, secrets)
     end
@@ -32,6 +32,12 @@ module BuildkiteWatcher
       pipeline_slug = prompt.ask("What's the pipeline slug of the pipeline you want to watch?")
       config.set(:pipeline_slug, value: pipeline_slug)
       config.write(create: true)
+    end
+
+    def self.generate_secrets_file(secrets, prompt)
+      buildkite_token = prompt.ask("Your buildkite token?")
+      secrets.set(:buildkite_token, value: buildkite_token)
+      secrets.write(create: true)
     end
   end
 end

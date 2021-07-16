@@ -47,15 +47,28 @@ module BuildkiteWatcher
       expect(result.buildkite_token).to eq("my-super-secret-token")
     end
 
-    it "prompts the user if secrets file is missing"
+    it "prompts the user if secrets file is missing" do
+      allow(prompt).to receive(:ask).and_return("my-secret-token")
+
+      result = load
+
+      expect(result.buildkite_token).to eq("my-secret-token")
+    end
+
+    it "prompts the user if secrets file is missing" do
+      allow(prompt).to receive(:ask).and_return("my-secret-token")
+
+      load
+
+      expect(File.exist?(secrets_file_name)).to eq(true), "Expected to create file, but it was not created"
+      expect(File.read(secrets_file_name)).to include("buildkite_token: my-secret-token")
+    end
 
     def load
       ConfigLoader.load(config, secrets, prompt)
     end
 
     def create_tty_config
-      puts "############ tmp_dir        ##########"
-      p tmp_dir
       config = TTY::Config.new
       config.append_path(tmp_dir)
       config
