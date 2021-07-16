@@ -8,17 +8,16 @@ module BuildkiteWatcher
     CONFIG_FILE_NAME = ".buildkite_watcher.yml"
     SECRETS_FILE_NAME = ".buildkite_watcher_secrets.yml"
 
-    def self.load
-      config = TTY::Config.new
+    def self.load(config = TTY::Config.new, secrets = TTY::Config.new)
       config.filename = CONFIG_FILE_NAME
       config.append_path Dir.pwd
-      config.read
+      config.read if config.exist?
 
-      secrets = TTY::Config.new
       secrets.filename = SECRETS_FILE_NAME
       secrets.append_path Dir.pwd
       secrets.append_path Dir.home
-      secrets.read
+
+      secrets.read if secrets.exist?
 
       Config.new(config, secrets)
     end
