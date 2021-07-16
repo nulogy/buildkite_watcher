@@ -109,7 +109,7 @@ module BuildkiteWatcher
       buildkite_query = {
         query: GRAPHQL_QUERY,
         variables: {
-          pipelineSlug: config.pipeline,
+          pipelineSlug: config.pipeline_slug,
           commitHash: commit_hash,
           branch: branch_name,
         },

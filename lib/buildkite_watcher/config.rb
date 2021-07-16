@@ -2,10 +2,10 @@
 
 module BuildkiteWatcher
   class Config
-    attr_reader :pipeline, :buildkite_token
+    attr_reader :pipeline_slug, :buildkite_token
 
     def initialize(config, secrets)
-      @pipeline = config.fetch(:pipeline)
+      @pipeline_slug = config.fetch(:pipeline_slug)
       @buildkite_token = secrets.fetch(:buildkite_token)
     end
   end
