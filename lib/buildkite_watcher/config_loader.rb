@@ -18,7 +18,6 @@ module BuildkiteWatcher
 
       secrets.filename = SECRETS_FILE_NAME
       config.extname = EXTENSION
-      secrets.append_path Dir.pwd
       secrets.append_path Dir.home
 
       secrets.exist? ? secrets.read : generate_secrets_file(secrets, prompt)
