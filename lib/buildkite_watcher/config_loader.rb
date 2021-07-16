@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "tty-config"
+require "tty-link"
 require "tty-prompt"
 require "buildkite_watcher/config"
 
@@ -37,7 +38,11 @@ module BuildkiteWatcher
     end
 
     def self.generate_secrets_file(secrets, prompt)
-      buildkite_token = prompt.mask("Your buildkite token?")
+      buildkite_token = prompt.mask(<<~MSG)
+        Create a #{
+          TTY::Link.link_to("New API Access token in buildkite", "https://buildkite.com/user/api-access-tokens/new")
+        } with read access to pipeline, jobs, and artifacts, and paste the token here:
+      MSG
       secrets.set(:buildkite_token, value: buildkite_token)
       secrets.write(create: true)
     end
