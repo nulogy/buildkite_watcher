@@ -52,10 +52,12 @@ module BuildkiteWatcher
     end
 
     def generate_secrets_file
-      buildkite_token = prompt.mask(<<~MSG)
+      # We use #chop as a work around for a defect in TTY::Prompt that reprints prompt on every character
+      # entered
+      buildkite_token = prompt.mask(<<~MSG.chop)
         Create a #{
             TTY::Link.link_to("New API Access token in buildkite", "https://buildkite.com/user/api-access-tokens/new")
-          } with read access to pipeline, jobs, and artifacts, and paste the token here:
+          }. Make sure it has Organization Access and GraphQL API Access, and paste the token here:
       MSG
       secrets.set(:buildkite_token, value: buildkite_token)
       secrets.write(create: true)
