@@ -1,5 +1,8 @@
 # Buildkite Watcher
 
+[![Gem Version](https://badge.fury.io/rb/buildkite_watcher.svg)](https://badge.fury.io/rb/buildkite_watcher)
+[![CI Status](https://github.com/nulogy/buildkite_watcher/workflows/CI/badge.svg?branch=main)](https://github.com/nulogy/buildkite_watcher/actions?query=workflow%3ACI)
+
 Command line utility that continuously watches for the buildkite job running current git HEAD and notifies on build status changes.
 
 ## Installation
