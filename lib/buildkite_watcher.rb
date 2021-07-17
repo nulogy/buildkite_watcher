@@ -155,7 +155,7 @@ module BuildkiteWatcher
       build.state
     rescue StandardError => e
       puts
-      puts Rainbow("ERROR: #{e.message}\n#{e.backtrace}").red
+      puts Rainbow("ERROR: \n#{e.backtrace.reverse.join("\n")}\n#{e.message}").red
     end
 
     private
