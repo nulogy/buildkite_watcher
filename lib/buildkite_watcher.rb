@@ -163,11 +163,12 @@ module BuildkiteWatcher
     def maybe_notify(previous_result, new_result)
       return if new_result == previous_result || previous_result == BUILD_UNKNOWN_STATUS
 
+      # You can find available sounds here: '/System/Library/Sounds'
       case new_result
       when BUILD_PASSED, BUILD_BLOCKED
         system('osascript -e \'display notification "CI PASSED" with title "CI Result Watch" sound name "Glass"\'')
       when BUILD_FAILED
-        system('osascript -e \'display notification "CI FAILED" with title "CI Result Watch" sound name "Basso"\'')
+        system('osascript -e \'display notification "CI FAILED" with title "CI Result Watch" sound name "Funk"\'')
       end
     end
 
