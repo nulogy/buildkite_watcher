@@ -53,12 +53,16 @@ module BuildkiteWatcher
     end
 
     def generate_secrets_file
+      link_to_instructions =
+        TTY::Link.link_to("here", "https://github.com/nulogy/buildkite_watcher/blob/main/docs/buildkite_token.md")
+      link_to_new_token =
+        TTY::Link.link_to("New API Access token in Buildkite", "https://buildkite.com/user/api-access-tokens/new")
+
       # We use #chop as a work around for a defect in TTY::Prompt that reprints prompt on every character
       # entered
       buildkite_token = prompt.mask(<<~MSG.chop)
-        Create a #{
-            TTY::Link.link_to("New API Access token in buildkite", "https://buildkite.com/user/api-access-tokens/new")
-          }. Make sure it has Organization Access and GraphQL API Access, and paste the token here:
+        Create a #{link_to_new_token}.
+        Make sure it has Organization and GraphQL API Access (more detailed instructions #{link_to_instructions}), and paste the token here:
       MSG
       secrets.set(:buildkite_token, value: buildkite_token)
       secrets.write(create: true)
