@@ -43,9 +43,10 @@ module BuildkiteWatcher
     def generate_config_file
       prompt.ok("Welcome to Buildkite Watcher!")
       prompt.say("I can't find the configuration file, so I'll generate one for you now.")
+      link_to_instructions =
+        TTY::Link.link_to("instructions", "https://github.com/nulogy/buildkite_watcher/blob/main/docs/pipeline_slug.md")
       pipeline_slug = prompt.ask(<<~MSG)
-        What's the pipeline slug of the pipeline you want to watch?
-        You can find the pipeline slug on the URL of any of your builds, and it has the form of 'org-name/pipeline-name'.
+        What's the pipeline slug of the pipeline you want to watch? See #{link_to_instructions} if you don't know how to find the pipeline slug.
       MSG
       config.set(:pipeline_slug, value: pipeline_slug)
       config.write(create: true)
