@@ -4,6 +4,7 @@ require "rainbow"
 require "rest-client"
 require "json"
 require "buildkite_watcher/version"
+require "buildkite_watcher/config_loader"
 
 # Command line utility that continuously watches for the buildkite job running current git HEAD and
 # notifies on build status changes.
@@ -72,6 +73,8 @@ module BuildkiteWatcher
     BUILD_UNKNOWN_STATUS = "UNKNOWN"
 
     def result_watch
+      config = ConfigLoader.load
+
       Signal.trap("SIGINT") do
         puts
         puts Rainbow("Program interrupt received. Exiting.").red
@@ -81,7 +84,7 @@ module BuildkiteWatcher
       previous_result = BUILD_UNKNOWN_STATUS
       loop do
         system("clear")
-        new_result = result
+        new_result = result(config)
 
         maybe_notify(previous_result, new_result)
         previous_result = new_result
@@ -98,7 +101,7 @@ module BuildkiteWatcher
     # - current commit has a build, has passed
     # - current commit has a build, has failed
 
-    def result
+    def result(config)
       puts Rainbow("Branch: ").bright + Rainbow(branch_name)
       puts Rainbow("HEAD ➜  ").bright + Rainbow(commit_hash)
       puts
@@ -106,13 +109,13 @@ module BuildkiteWatcher
       buildkite_query = {
         query: GRAPHQL_QUERY,
         variables: {
-          pipelineSlug: pipeline_slug,
+          pipelineSlug: config.pipeline_slug,
           commitHash: commit_hash,
           branch: branch_name,
         },
       }
 
-      builds = fetch_build_data(buildkite_query)
+      builds = fetch_build_data(buildkite_query, config)
       commit_hash_builds = simplify_builds_response_data(builds.commit_hash_builds)
       branch_builds = simplify_builds_response_data(builds.branch_builds)
 
@@ -172,13 +175,13 @@ module BuildkiteWatcher
       [BUILD_PASSED, BUILD_BLOCKED].include?(state)
     end
 
-    def fetch_build_data(buildkite_query)
+    def fetch_build_data(buildkite_query, config)
       response =
         JSON.parse(
           RestClient.post(
             "https://graphql.buildkite.com/v1",
             buildkite_query.to_json,
-            { Authorization: "Bearer #{buildkite_token}", content_type: :json },
+            { Authorization: "Bearer #{config.buildkite_token}", content_type: :json },
           ),
           object_class: OpenStruct,
         )
@@ -257,22 +260,24 @@ module BuildkiteWatcher
       puts
       puts Rainbow("#{failures.count} failures from these specs:").yellow
       puts
-      failures.map(&:name).map { |name| /\[(\w+)\] (.*): .*/.match(name).captures }.group_by(&:first)
+      failures
+        .map(&:name)
+        .map { |name| /\[(\w+)\] (.*): .*/.match(name).captures }
+        .group_by(&:first)
         .each do |key, values|
-        puts key
-        values.map { |e| e[1] }.uniq.each do |failure_file|
-          failure_file
-          puts Rainbow(failure_file).red
+          puts key
+          values
+            .map { |e| e[1] }
+            .uniq
+            .each do |failure_file|
+              failure_file
+              puts Rainbow(failure_file).red
+            end
         end
-      end
     end
 
     def fetch_failures(download_url)
       JSON.parse(RestClient.get(download_url), object_class: OpenStruct)
-    end
-
-    def pipeline_slug
-      ENV.fetch("PIPELINE_SLUG")
     end
 
     def branch_name
@@ -281,10 +286,6 @@ module BuildkiteWatcher
 
     def commit_hash
       ENV.fetch("COMMIT_HASH", `git rev-parse HEAD`.strip)
-    end
-
-    def buildkite_token
-      @_buildkite_token ||= `cat ~/.buildkite_token`
     end
   end
 end
