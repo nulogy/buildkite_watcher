@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    buildkite_watcher (0.2.0)
+    buildkite_watcher (0.3.0)
       rest-client (~> 2.0)
       tty-config (~> 0.5)
       tty-link (~> 0.1)

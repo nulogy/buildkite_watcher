@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.3.0] - 2021-07-20
+
+- Changed notification title to use name of this gem
+
 ## [0.2.0] - 2021-07-17
 
 - Uses config files to store buildkite token and buildkite pipeline slug
