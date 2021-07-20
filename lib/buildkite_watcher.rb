@@ -166,9 +166,9 @@ module BuildkiteWatcher
       # You can find available sounds here: '/System/Library/Sounds'
       case new_result
       when BUILD_PASSED, BUILD_BLOCKED
-        system('osascript -e \'display notification "CI PASSED" with title "CI Result Watch" sound name "Glass"\'')
+        system('osascript -e \'display notification "CI PASSED" with title "Buildkite Watcher" sound name "Glass"\'')
       when BUILD_FAILED
-        system('osascript -e \'display notification "CI FAILED" with title "CI Result Watch" sound name "Funk"\'')
+        system('osascript -e \'display notification "CI FAILED" with title "Buildkite Watcher" sound name "Funk"\'')
       end
     end
 
