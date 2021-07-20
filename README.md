@@ -3,19 +3,21 @@
 [![Gem Version](https://badge.fury.io/rb/buildkite_watcher.svg)](https://badge.fury.io/rb/buildkite_watcher)
 [![CI Status](https://github.com/nulogy/buildkite_watcher/workflows/CI/badge.svg?branch=main)](https://github.com/nulogy/buildkite_watcher/actions?query=workflow%3ACI)
 
-Command line utility that continuously watches for the buildkite job running current git HEAD and notifies on build status changes.
+It continuously watches the most recent buildkite job running the current git branch and notifies on build status changes.
+
+![Notification Screenshot](docs/notification_screenshot.png)
 
 ## Installation
 
-1. Run this command:
+Run this command:
 
-    $ gem install buildkite_watcher
+    gem install buildkite_watcher
 
 ## Usage
 
-From a directory in your project, run.
+From your project's root directory, run:
 
-`$ bw`
+    bw
 
 ## Development
 
