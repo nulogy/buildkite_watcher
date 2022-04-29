@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
     notifies on build status changes.
   MSG
 
-  spec.required_ruby_version = ">= 2.7", "< 3.1"
+  spec.required_ruby_version = ">= 2.7"
 
   spec.metadata["source_code_uri"] = "https://github.com/nulogy/buildkite_watcher"
   spec.metadata["changelog_uri"] = "https://github.com/nulogy/buildkite_watcher/blob/main/CHANGELOG.md"
